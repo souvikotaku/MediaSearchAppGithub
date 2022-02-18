@@ -6,15 +6,56 @@ import {
   StatusBar,
   TextInput,
   TouchableOpacity,
+  FlatList,
+  Image,
+  ScrollView,
 } from "react-native";
 // import { Formik } from "formik";
 // import * as yup from "yup";
 import { FontAwesome, Entypo } from "@expo/vector-icons";
 import { HStack } from "native-base";
 
+const DATA = [
+  {
+    id: "bd7acbea-c1b1-46c2-aed5-3ad53abb28ba",
+    title: "First Item",
+  },
+  {
+    id: "3ac68afc-c605-48d3-a4f8-fbd91aa97f63",
+    title: "Second Item",
+  },
+  {
+    id: "58694a0f-3da1-471f-bd96-145571e29d72",
+    title: "Third Item",
+  },
+];
+
+const Item = ({ title }) => (
+  <View style={styles.item}>
+    <Text style={styles.title}>{title}</Text>
+  </View>
+);
+
 const Mainscreen = () => {
   const [chars, setChars] = useState([]);
   const [usernameAvailable, setAvailable] = useState(false);
+  const [query, setQuery] = useState("");
+
+  const renderItem = ({ item }) => {
+    return (
+      <>
+        <Image
+          source={{
+            uri: "https://demofree.sirv.com/nope-not-here.jpg",
+
+            width: 200,
+            height: 200,
+          }}
+        />
+        <Item title={item.title} />
+      </>
+    );
+  };
 
   const callSearchApi = async (query) => {
     const response = await fetch(
@@ -22,18 +63,17 @@ const Mainscreen = () => {
       {
         method: "GET",
         headers: {
-          "Content-Type": "application/json",
           "X-rapidapi-key":
             "30a79d49e4msh60149164f98a8a5p16accdjsn3726a274f766",
           "x-rapidapi-host": "imdb8.p.rapidapi.com",
         },
-        // body: JSON.stringify(data),
       }
     );
     const responseJson = await response.json();
-    console.log(responseJson);
-    // setAvailable(responseJson.isAvailable);
+    // console.log(responseJson.d);
+    setChars(responseJson.d);
   };
+
   return (
     <View style={styles.container}>
       <Text
@@ -66,15 +106,62 @@ const Mainscreen = () => {
           returnKeyType="next"
           placeholder="Search"
           placeholderTextColor="#BDBDBD"
-          // value={chars}
-          //   value={props.values.username}
           onChangeText={(text) => {
             console.log(text);
-            setChars(text);
+            setQuery(text);
             callSearchApi(text);
           }}
-          //   ref={textinputemail}
         />
+      </View>
+      <View style={{ height: "60%", marginTop: 20 }}>
+        <ScrollView>
+          <View>
+            {query.length > 0 ? (
+              <>
+                {/* <FlatList
+            data={chars}
+            // renderItem={renderItem}
+            renderItem={({ item }) => {
+              return <Text>{item.v[0].l}</Text>;
+            }}
+            // keyExtractor={item => item.ID}
+            keyExtractor={(item) => item.id}
+          /> */}
+                {chars ? (
+                  chars.map((item, index) => {
+                    return (
+                      <View key={index}>
+                        <Image
+                          source={{
+                            uri:
+                              item.i && item.i.imageUrl
+                                ? item.i.imageUrl
+                                : "https://demofree.sirv.com/nope-not-here.jpg",
+
+                            width: 200,
+                            height: 200,
+                          }}
+                        />
+
+                        <Text>{item.l}</Text>
+                      </View>
+                    );
+                  })
+                ) : (
+                  <FlatList
+                    data={DATA}
+                    renderItem={renderItem}
+                    keyExtractor={(item) => item.id}
+                  />
+                )}
+              </>
+            ) : (
+              <View>
+                <Text>no data</Text>
+              </View>
+            )}
+          </View>
+        </ScrollView>
       </View>
     </View>
   );
